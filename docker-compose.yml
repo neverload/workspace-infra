@@ -27,6 +27,35 @@ services:
     volumes:
       - mongodb_data:/data/db
     restart: unless-stopped
+    cpus: 2.0
+    mem_limit: 1G
+    networks:
+      - dev-network
+
+  dev:
+    build: ./dev
+    container_name: dev
+    restart: unless-stopped
+    ports:
+      - "2201:22"
+    volumes:
+      - /home/admin/shared:/home/admin/shared
+      - dev-data:/home/admin/.local
+    networks:
+      - dev-network
+
+  prod:
+    build: ./prod
+    container_name: prod
+    restart: unless-stopped
+    ports:
+      - "2202:22"
+    volumes:
+      - /home/admin/shared:/home/admin/shared
+      - prod-data:/home/admin/.local
+    runtime: nvidia
+    networks:
+      - dev-network
 
 volumes:
   caddy_data:
@@ -35,3 +64,11 @@ volumes:
     name: workspace_infra_caddy_config
   mongodb_data:
     name: workspace_infra_mongodb_data
+  dev-data:
+    name: workspace_infra_dev_data
+  prod-data:
+    name: workspace_infra_prod_data
+
+networks:
+  dev-network:
+    driver: bridge
