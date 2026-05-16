@@ -7,6 +7,7 @@ RUN apt update && apt install -y \
     wget \
     software-properties-common \
     python3-pip \
+    git \
     && apt clean
 
 # 安装 Python 3.13
