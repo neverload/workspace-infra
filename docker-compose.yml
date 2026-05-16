@@ -1,0 +1,37 @@
+name: workspace-infra
+
+services:
+  caddy:
+    image: caddy:2
+    container_name: caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    env_file:
+      - .env
+    volumes:
+      - ./infra/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  mongodb:
+    image: mongo:7
+    container_name: mongo
+    environment:
+      MONGO_INITDB_DATABASE: workspace_infra
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    restart: unless-stopped
+
+volumes:
+  caddy_data:
+    name: workspace_infra_caddy_data
+  caddy_config:
+    name: workspace_infra_caddy_config
+  mongodb_data:
+    name: workspace_infra_mongodb_data

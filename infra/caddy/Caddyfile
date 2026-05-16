@@ -1,0 +1,158 @@
+{
+  local_certs
+  http_port 80
+  https_port 443
+}
+
+# --- nextgirl ---
+# 各业务容器端口与各仓库 docker-compose.local.yml 中映射到宿主机的端口一致（经 host.docker.internal）
+
+nextgirl.local, www.nextgirl.local {
+  tls internal
+  encode gzip
+  reverse_proxy host.docker.internal:{$NEXTGIRL_WEB_PORT}
+  header {
+    -Server
+  }
+}
+
+api.nextgirl.local, 100.88.225.63:8002 {
+  tls internal
+  encode gzip
+  reverse_proxy host.docker.internal:{$NEXTGIRL_API_PORT} {
+    header_up Host {host}
+    header_up X-Real-IP {remote_host}
+  }
+  header {
+    -Server
+    Access-Control-Allow-Origin *
+    Access-Control-Allow-Methods "GET, POST, OPTIONS, PUT, PATCH, DELETE"
+    Access-Control-Allow-Headers "*"
+  }
+}
+
+ws.nextgirl.local {
+  tls internal
+  reverse_proxy host.docker.internal:{$NEXTGIRL_WS_PORT} {
+    transport http {
+      versions 1.1
+    }
+  }
+  header {
+    -Server
+  }
+}
+
+s3.nextgirl.local {
+  tls internal
+  reverse_proxy host.docker.internal:9000
+  header {
+    -Server
+  }
+}
+
+prefect.nextgirl.local {
+  tls internal
+  reverse_proxy host.docker.internal:4200 {
+    header_up Connection {>Connection}
+    header_up Upgrade {>Upgrade}
+  }
+  header {
+    -Server
+  }
+}
+
+redis-insight.nextgirl.local {
+  tls internal
+  reverse_proxy host.docker.internal:5540
+  header {
+    -Server
+  }
+}
+
+# --- intelink ---
+
+intelink.local, www.intelink.local {
+  tls internal
+  encode gzip
+  reverse_proxy host.docker.internal:{$INTELINK_WEB_PORT}
+  header {
+    -Server
+  }
+}
+
+api.intelink.local {
+  tls internal
+  encode gzip
+  reverse_proxy host.docker.internal:{$INTELINK_SERVER_PORT} {
+    header_up Host {host}
+    header_up X-Real-IP {remote_host}
+  }
+  header {
+    -Server
+    Access-Control-Allow-Origin *
+    Access-Control-Allow-Methods "GET, POST, OPTIONS, PUT, PATCH, DELETE"
+    Access-Control-Allow-Headers "*"
+  }
+}
+
+s3.intelink.local {
+  tls internal
+  reverse_proxy host.docker.internal:9200
+  header {
+    -Server
+  }
+}
+
+# --- futurist ---
+
+futurist.local, www.futurist.local {
+  tls internal
+  encode gzip
+  reverse_proxy host.docker.internal:{$FUTURIST_WEB_PORT}
+  header {
+    -Server
+  }
+}
+
+api.futurist.local {
+  tls internal
+  encode gzip
+  reverse_proxy host.docker.internal:{$FUTURIST_SERVER_PORT} {
+    header_up Host {host}
+    header_up X-Real-IP {remote_host}
+  }
+  header {
+    -Server
+    Access-Control-Allow-Origin *
+    Access-Control-Allow-Methods "GET, POST, OPTIONS, PUT, PATCH, DELETE"
+    Access-Control-Allow-Headers "*"
+  }
+}
+
+s3.futurist.local {
+  tls internal
+  reverse_proxy host.docker.internal:9100
+  header {
+    -Server
+  }
+}
+
+prefect.futurist.local {
+  tls internal
+  reverse_proxy host.docker.internal:4210 {
+    header_up Connection {>Connection}
+    header_up Upgrade {>Upgrade}
+  }
+  header {
+    -Server
+  }
+}
+
+redis-insight.futurist.local {
+  tls internal
+  reverse_proxy host.docker.internal:5541
+  header {
+    -Server
+  }
+}
