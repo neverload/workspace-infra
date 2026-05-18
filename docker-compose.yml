@@ -36,14 +36,25 @@ services:
     build: ./dev
     container_name: dev
     restart: unless-stopped
+    env_file:
+      - .env
     ports:
       - "2201:22"
+      # Bind all host interfaces so Tailscale / LAN reaches container services (omit 127.0.0.1: prefix).
+      - "${NEXTGIRL_WEB_PORT}:${NEXTGIRL_WEB_PORT}"
+      - "${NEXTGIRL_API_PORT}:${NEXTGIRL_API_PORT}"
+      - "${NEXTGIRL_WS_PORT}:${NEXTGIRL_WS_PORT}"
+      - "${INTELINK_WEB_PORT}:${INTELINK_WEB_PORT}"
+      - "${INTELINK_SERVER_PORT}:${INTELINK_SERVER_PORT}"
+      - "${FUTURIST_WEB_PORT}:${FUTURIST_WEB_PORT}"
+      - "${FUTURIST_SERVER_PORT}:${FUTURIST_SERVER_PORT}"
     volumes:
       - /home/admin/shared:/home/admin/shared
       - dev-data:/home/admin/.local
     networks:
       - dev-network
 
+  # App ports intentionally only on `dev`: `dev`+`prod` share the same .env ports; duplicate publish would fail on compose up.
   prod:
     build: ./prod
     container_name: prod

@@ -8,6 +8,8 @@ RUN apt update && apt install -y \
     software-properties-common \
     python3-pip \
     git \
+    vim \
+    yarn \
     && apt clean
 
 # 安装 Python 3.13
