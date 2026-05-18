@@ -32,41 +32,30 @@ services:
     networks:
       - dev-network
 
+  # host 网络：与宿主机共用路由/Clash TUN；ports 映射无效故不写。
+  # sshd 必须避开宿主机 :22：用 command 覆盖监听端口，无需改镜像、不必 docker build。
   dev:
     build: ./dev
     container_name: dev
     restart: unless-stopped
+    network_mode: host
     env_file:
       - .env
-    ports:
-      - "2201:22"
-      # Bind all host interfaces so Tailscale / LAN reaches container services (omit 127.0.0.1: prefix).
-      - "${NEXTGIRL_WEB_PORT}:${NEXTGIRL_WEB_PORT}"
-      - "${NEXTGIRL_API_PORT}:${NEXTGIRL_API_PORT}"
-      - "${NEXTGIRL_WS_PORT}:${NEXTGIRL_WS_PORT}"
-      - "${INTELINK_WEB_PORT}:${INTELINK_WEB_PORT}"
-      - "${INTELINK_SERVER_PORT}:${INTELINK_SERVER_PORT}"
-      - "${FUTURIST_WEB_PORT}:${FUTURIST_WEB_PORT}"
-      - "${FUTURIST_SERVER_PORT}:${FUTURIST_SERVER_PORT}"
+    command: ["/usr/sbin/sshd", "-D", "-e", "-p", "2201"]
     volumes:
       - /home/admin/shared:/home/admin/shared
       - dev-data:/home/admin/.local
-    networks:
-      - dev-network
 
-  # App ports intentionally only on `dev`: `dev`+`prod` share the same .env ports; duplicate publish would fail on compose up.
   prod:
     build: ./prod
     container_name: prod
     restart: unless-stopped
-    ports:
-      - "2202:22"
+    network_mode: host
+    command: ["/usr/sbin/sshd", "-D", "-e", "-p", "2202"]
     volumes:
       - /home/admin/shared:/home/admin/shared
       - prod-data:/home/admin/.local
     runtime: nvidia
-    networks:
-      - dev-network
 
 volumes:
   caddy_data:
