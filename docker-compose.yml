@@ -32,7 +32,7 @@ services:
     networks:
       - dev-network
 
-  # ~/.local 数据卷：若 workspace_infra_dev_data 为空而 docker-env_dev-data 里有旧数据，下面用 external 挂旧卷名（见 volumes 段）。
+  # host 网络；sshd :2201 / :2202，见 command。
   dev:
     build: ./dev
     container_name: dev
@@ -63,13 +63,10 @@ volumes:
     name: workspace_infra_caddy_config
   mongodb_data:
     name: workspace_infra_mongodb_data
-  # 曾用 compose project `docker-env` 时创建的卷名；与当前 `name: workspace_infra` 并存时空卷不会被用到。
   dev-data:
-    external: true
-    name: docker-env_dev-data
+    name: workspace_infra_dev_data
   prod-data:
-    external: true
-    name: docker-env_prod-data
+    name: workspace_infra_prod_data
 
 networks:
   dev-network:
