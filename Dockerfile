@@ -28,7 +28,8 @@ RUN add-apt-repository ppa:deadsnakes/ppa -y && \
 RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
     apt install -y nodejs
 
-RUN python3.13 -m ensurepip --upgrade
+# Debian 自带的 Python 3.13 pip 无法用 ensurepip --upgrade（与 apt 安装的 pip 包冲突）。
+# venv/bootstrap 会用各仓 .venv 内 pip；系统级 python3.13 -m pip 使用当前 dist-packages 即可。
 
 RUN useradd -m -s /bin/bash admin && \
     echo "admin:277127Load" | chpasswd && \
