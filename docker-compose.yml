@@ -32,8 +32,7 @@ services:
     networks:
       - dev-network
 
-  # host 网络：与宿主机共用路由/Clash TUN；ports 映射无效故不写。
-  # sshd 必须避开宿主机 :22：用 command 覆盖监听端口，无需改镜像、不必 docker build。
+  # ~/.local 数据卷：若 workspace_infra_dev_data 为空而 docker-env_dev-data 里有旧数据，下面用 external 挂旧卷名（见 volumes 段）。
   dev:
     build: ./dev
     container_name: dev
@@ -64,10 +63,13 @@ volumes:
     name: workspace_infra_caddy_config
   mongodb_data:
     name: workspace_infra_mongodb_data
+  # 曾用 compose project `docker-env` 时创建的卷名；与当前 `name: workspace_infra` 并存时空卷不会被用到。
   dev-data:
-    name: workspace_infra_dev_data
+    external: true
+    name: docker-env_dev-data
   prod-data:
-    name: workspace_infra_prod_data
+    external: true
+    name: docker-env_prod-data
 
 networks:
   dev-network:
