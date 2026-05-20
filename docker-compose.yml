@@ -34,7 +34,7 @@ services:
 
   dev:
     build: .
-    image: workspace-infra/runtime:latest
+    image: workspace-infra/dev:latest
     container_name: dev
     restart: unless-stopped
     network_mode: host
@@ -48,7 +48,7 @@ services:
 
   prod:
     build: .
-    image: workspace-infra/runtime:latest
+    image: workspace-infra/prod:latest
     container_name: prod
     restart: unless-stopped
     network_mode: host
