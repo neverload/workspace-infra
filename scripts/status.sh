@@ -9,14 +9,16 @@ echo "========== status $(date -Iseconds) =========="
 echo "compose 目录: $ROOT"
 echo ""
 
-echo "--- 宿主机 work/ （bind 源，代码应 clone 在这里）---"
-if [[ -d "$ROOT/work" ]]; then
-  echo "路径: $ROOT/work"
-  ls -la "$ROOT/work"
-  echo "条目数: $(ls -A "$ROOT/work" 2>/dev/null | wc -l)"
+echo "--- 宿主机 /home/admin/work （代码 clone 在这里）---"
+HOST_WORK="/home/admin/work"
+if [[ -d "$HOST_WORK" ]]; then
+  ls -la "$HOST_WORK"
+  echo "条目数: $(ls -A "$HOST_WORK" 2>/dev/null | wc -l)"
 else
-  echo "!!! $ROOT/work 不存在 — 先 mkdir -p work"
+  echo "!!! $HOST_WORK 不存在 — mkdir -p /home/admin/work"
 fi
+echo ""
+echo "（不是 ~/workspace-infra/work，以前配错路径会导致一直空）"
 echo ""
 
 echo "--- 容器 dev ---"
