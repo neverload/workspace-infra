@@ -32,7 +32,15 @@ run_pull() {
   local pull_out pull_rc work_items
   pull_out="$(mktemp)"
   set +e
-  sudo -u admin -H /bin/bash /usr/local/bin/pull >"$pull_out" 2>&1
+  sudo -u admin -H env \
+    WORK_DIR="${WORK_DIR:?WORK_DIR 未设置}" \
+    NEXTGIRL_GIT_URL="${NEXTGIRL_GIT_URL:?NEXTGIRL_GIT_URL 未设置}" \
+    NEXTGIRL_GIT_BRANCH="${NEXTGIRL_GIT_BRANCH:?NEXTGIRL_GIT_BRANCH 未设置}" \
+    INTELINK_GIT_URL="${INTELINK_GIT_URL:?INTELINK_GIT_URL 未设置}" \
+    INTELINK_GIT_BRANCH="${INTELINK_GIT_BRANCH:?INTELINK_GIT_BRANCH 未设置}" \
+    FUTURIST_GIT_URL="${FUTURIST_GIT_URL:?FUTURIST_GIT_URL 未设置}" \
+    FUTURIST_GIT_BRANCH="${FUTURIST_GIT_BRANCH:?FUTURIST_GIT_BRANCH 未设置}" \
+    /bin/bash /usr/local/bin/pull >"$pull_out" 2>&1
   pull_rc=$?
   set -e
   while read -r line; do log "$line"; done <"$pull_out"

@@ -40,8 +40,6 @@ services:
     network_mode: host
     env_file:
       - .env
-    environment:
-      WORK_DIR: /home/admin/work
     command: ["/bin/bash", "/usr/local/bin/workspace-infra-entrypoint.sh", "2201"]
     volumes:
       - /home/admin/work:/home/admin/work
@@ -61,7 +59,6 @@ services:
     env_file:
       - .env
     environment:
-      WORK_DIR: /home/admin/work
       NVIDIA_VISIBLE_DEVICES: all
       NVIDIA_DRIVER_CAPABILITIES: compute,utility
     command: ["/bin/bash", "/usr/local/bin/workspace-infra-entrypoint.sh", "2202"]
