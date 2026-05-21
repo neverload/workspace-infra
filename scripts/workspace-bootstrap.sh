@@ -21,6 +21,36 @@ WORK="/home/admin/work"
 mkdir -p "$WORK"
 chown admin:admin "$WORK"
 
+admin_ssh() {
+  sudo -u admin -H env HOME=/home/admin \
+    GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=/home/admin/.ssh/known_hosts" \
+    "$@"
+}
+
+verify_github_ssh() {
+  local url="$1"
+  [[ "$url" == git@github.com:* ]] || return 0
+
+  log "检查 admin 的 GitHub SSH（密钥应在 /home/admin/.ssh/id_ed25519 或 id_rsa）"
+  ls -la /home/admin/.ssh/ 2>&1 | sed 's/^/[workspace-bootstrap]   /' || true
+
+  if [ ! -f /home/admin/.ssh/id_ed25519 ] && [ ! -f /home/admin/.ssh/id_rsa ]; then
+    echo "workspace-bootstrap: 未找到私钥。请在容器内以 admin 执行: ssh-keygen -t ed25519 -N '' -f ~/.ssh/id_ed25519" >&2
+    return 1
+  fi
+  chmod 700 /home/admin/.ssh
+  [ -f /home/admin/.ssh/id_ed25519 ] && chmod 600 /home/admin/.ssh/id_ed25519
+  [ -f /home/admin/.ssh/id_rsa ] && chmod 600 /home/admin/.ssh/id_rsa
+  chown -R admin:admin /home/admin/.ssh
+
+  if admin_ssh ssh -T git@github.com 2>&1 | tee /dev/stderr | grep -qi 'successfully authenticated'; then
+    log "GitHub SSH 认证 OK"
+    return 0
+  fi
+  echo "workspace-bootstrap: GitHub SSH 认证失败。Deploy Key 须分别加到 nextgirl/intelink/futurist 三个仓库；或把公钥加到 GitHub 账号 Settings → SSH keys。" >&2
+  return 1
+}
+
 clone_one() {
   local name="$1"
   local url="$2"
@@ -29,10 +59,11 @@ clone_one() {
     log "已存在 $dir，跳过 git clone"
     return 0
   fi
-  log "git clone $name"
-  git clone "$url" "$dir"
-  chown -R admin:admin "$dir"
+  log "git clone $name ← $url"
+  admin_ssh git clone "$url" "$dir"
 }
+
+verify_github_ssh "$NEXTGIRL_GIT_URL"
 
 clone_one nextgirl "$NEXTGIRL_GIT_URL"
 clone_one intelink "$INTELINK_GIT_URL"
