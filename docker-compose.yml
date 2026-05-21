@@ -44,6 +44,8 @@ services:
       - dev-data:/home/admin/.local
       - ssh-data:/home/admin/.ssh
       - ./scripts/pull.sh:/usr/local/bin/pull:ro
+      - ./scripts/workspace-infra-entrypoint.sh:/usr/local/bin/workspace-infra-entrypoint.sh:ro
+      - ./scripts/workspace-ssh-volume-init.sh:/usr/local/bin/workspace-ssh-volume-init.sh:ro
 
   prod:
     build: .
@@ -57,6 +59,8 @@ services:
       - prod-data:/home/admin/.local
       - ssh-data:/home/admin/.ssh
       - ./scripts/pull.sh:/usr/local/bin/pull:ro
+      - ./scripts/workspace-infra-entrypoint.sh:/usr/local/bin/workspace-infra-entrypoint.sh:ro
+      - ./scripts/workspace-ssh-volume-init.sh:/usr/local/bin/workspace-ssh-volume-init.sh:ro
     environment:
       NVIDIA_VISIBLE_DEVICES: all
       NVIDIA_DRIVER_CAPABILITIES: compute,utility
