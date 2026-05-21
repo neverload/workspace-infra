@@ -1,11 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-WORK="${WORK_DIR:-/home/admin/work}"
-
-NEXTGIRL_GIT_URL="${NEXTGIRL_GIT_URL:-git@github.com:neverload/nextgirl.git}"
-INTELINK_GIT_URL="${INTELINK_GIT_URL:-git@github.com:neverload/intelink.git}"
-FUTURIST_GIT_URL="${FUTURIST_GIT_URL:-git@github.com:neverload/futurist.git}"
+WORK="${WORK_DIR:?WORK_DIR 未设置}"
 
 log() {
   echo "[$(date -Iseconds)] [pull] $*"
@@ -17,6 +13,13 @@ die() {
 }
 
 [[ "$(id -un)" == "admin" ]] || die "须以 admin 运行（entrypoint 会用 sudo -u admin 调用）"
+
+: "${NEXTGIRL_GIT_URL:?NEXTGIRL_GIT_URL 未设置}"
+: "${NEXTGIRL_GIT_BRANCH:?NEXTGIRL_GIT_BRANCH 未设置}"
+: "${INTELINK_GIT_URL:?INTELINK_GIT_URL 未设置}"
+: "${INTELINK_GIT_BRANCH:?INTELINK_GIT_BRANCH 未设置}"
+: "${FUTURIST_GIT_URL:?FUTURIST_GIT_URL 未设置}"
+: "${FUTURIST_GIT_BRANCH:?FUTURIST_GIT_BRANCH 未设置}"
 
 log "工作目录: ${WORK}"
 mkdir -p "$WORK"
@@ -40,26 +43,29 @@ export GIT_SSH_COMMAND="ssh -o BatchMode=yes -o ConnectTimeout=15 -o StrictHostK
 sync_one() {
   local name="$1"
   local url="$2"
+  local branch="$3"
   local dir="${WORK}/${name}"
   local t0=$SECONDS
 
   if [[ -d "${dir}/.git" ]]; then
-    log "${name}: git pull 开始 → ${url}"
-    git -C "$dir" pull --ff-only
-    log "${name}: pull 完成，耗时 $((SECONDS - t0))s"
+    log "${name}: fetch origin/${branch} → ${url}"
+    git -C "$dir" fetch origin "$branch"
+    git -C "$dir" checkout -B "$branch" "origin/${branch}"
+    git -C "$dir" reset --hard "origin/${branch}"
+    log "${name}: 同步完成，耗时 $((SECONDS - t0))s"
     return
   fi
 
-  [[ -d "$dir" ]] && die "${dir} 存在但不是 git 仓库"
+  [[ -d "$dir" ]] && die "${dir} 存在但不是 git 仓库，先 rm -rf ${dir}"
 
-  log "${name}: git clone 开始 → ${url}（可能较慢）"
-  git clone "$url" "$dir"
+  log "${name}: git clone -b ${branch} → ${url}"
+  git clone -b "$branch" "$url" "$dir"
   log "${name}: clone 完成，耗时 $((SECONDS - t0))s"
 }
 
 log "========== 开始同步三仓库 =========="
-sync_one nextgirl "$NEXTGIRL_GIT_URL"
-sync_one intelink "$INTELINK_GIT_URL"
-sync_one futurist "$FUTURIST_GIT_URL"
+sync_one nextgirl "$NEXTGIRL_GIT_URL" "$NEXTGIRL_GIT_BRANCH"
+sync_one intelink "$INTELINK_GIT_URL" "$INTELINK_GIT_BRANCH"
+sync_one futurist "$FUTURIST_GIT_URL" "$FUTURIST_GIT_BRANCH"
 log "========== 同步结束 =========="
 ls -la "$WORK"
