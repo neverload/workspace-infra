@@ -14,6 +14,11 @@ HOST_WORK="/home/admin/work"
 if [[ -d "$HOST_WORK" ]]; then
   ls -la "$HOST_WORK"
   echo "条目数: $(ls -A "$HOST_WORK" 2>/dev/null | wc -l)"
+  echo "属主: $(stat -c '%U:%G' "$HOST_WORK" 2>/dev/null || echo '?')"
+  if [[ "$(stat -c '%U' "$HOST_WORK" 2>/dev/null)" != "admin" ]]; then
+    echo "!!! 目录不是 admin 属主，pull 会 Permission denied"
+    echo "    修复: sudo chown admin:admin /home/admin/work && docker compose restart dev"
+  fi
 else
   echo "!!! $HOST_WORK 不存在 — mkdir -p /home/admin/work"
 fi

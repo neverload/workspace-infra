@@ -18,6 +18,11 @@ log "sshd 端口: ${SSH_PORT}"
 
 /usr/local/bin/workspace-ssh-volume-init.sh 2>&1 | while read -r line; do log "$line"; done
 
+mkdir -p /home/admin/work
+chown admin:admin /home/admin/work
+chmod 755 /home/admin/work
+log "/home/admin/work 权限: $(stat -c '%U:%G %a' /home/admin/work)"
+
 log "--- 挂载 /home/admin/work ---"
 if command -v findmnt >/dev/null 2>&1; then
   findmnt -T /home/admin/work 2>&1 | while read -r line; do log "findmnt: $line"; done || true
@@ -35,7 +40,7 @@ if [[ -f /usr/local/bin/pull ]]; then
   rm -f "$pull_out"
   if [[ "$pull_rc" -ne 0 ]]; then
     log "!!! git 同步失败 exit=${pull_rc} — 见上方 [pull] 日志"
-    log "!!! 常见原因: 容器 admin 无 GitHub SSH 私钥；或 /home/admin/work 权限"
+    log "!!! 若 Permission denied: ls -la /home/admin/work 应为 admin:admin"
   else
     log "git 同步成功"
   fi
