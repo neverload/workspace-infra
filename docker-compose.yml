@@ -62,6 +62,8 @@ services:
       - .env
     environment:
       WORK_DIR: /home/admin/work
+      NVIDIA_VISIBLE_DEVICES: all
+      NVIDIA_DRIVER_CAPABILITIES: compute,utility
     command: ["/bin/bash", "/usr/local/bin/workspace-infra-entrypoint.sh", "2202"]
     volumes:
       - /home/admin/work:/home/admin/work
@@ -71,9 +73,6 @@ services:
       - ./scripts/pull.sh:/usr/local/bin/pull:ro
       - ./scripts/workspace-infra-entrypoint.sh:/usr/local/bin/workspace-infra-entrypoint.sh:ro
       - ./scripts/workspace-ssh-volume-init.sh:/usr/local/bin/workspace-ssh-volume-init.sh:ro
-    environment:
-      NVIDIA_VISIBLE_DEVICES: all
-      NVIDIA_DRIVER_CAPABILITIES: compute,utility
     gpus: all
 
 volumes:
