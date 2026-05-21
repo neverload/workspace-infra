@@ -46,8 +46,8 @@ if docker ps -a --format '{{.Names}}' | grep -qx dev; then
     docker logs dev 2>&1 | tail -40
     echo ""
     if docker exec dev test -f /var/log/workspace-infra/startup.log 2>/dev/null; then
-      echo "--- startup.log ---"
-      docker exec dev cat /var/log/workspace-infra/startup.log 2>&1 | tail -30
+      echo "--- startup.log（最近 pull）---"
+      docker exec dev grep '\[pull\]\|git 同步' /var/log/workspace-infra/startup.log 2>&1 | tail -30
     fi
   else
     echo "dev 未运行，上面 Mounts 仍可用；启动: docker compose up -d dev"

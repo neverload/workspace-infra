@@ -49,11 +49,11 @@ run_pull() {
 }
 
 log "========== git 同步（后台 pull，clone 可能数分钟；sshd 不等待）=========="
-if [[ -f /usr/local/bin/pull ]]; then
+if [[ "${RUN_GIT_SYNC}" == "1" ]] && [[ -f /usr/local/bin/pull ]]; then
   run_pull &
   log "git 同步 pid=$! — 进度: docker logs -f dev 或 tail -f logs/startup.log"
 else
-  log "未找到 /usr/local/bin/pull，跳过 git 同步"
+  log "跳过 git 同步（仅 dev 容器 RUN_GIT_SYNC=1 时执行）"
   WORK_ITEMS="$(ls -A /home/admin/work 2>/dev/null | wc -l)"
   log "work 条目数: ${WORK_ITEMS}"
   ls -la /home/admin/work 2>&1 | while read -r line; do log "  $line"; done

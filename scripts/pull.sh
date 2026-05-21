@@ -32,6 +32,9 @@ log "工作目录: ${WORK}"
 mkdir -p "$WORK"
 cd "$WORK"
 
+exec 9>"${WORK}/.pull.lock"
+flock -n 9 || die "另一个 pull 正在运行（dev/prod 勿同时 pull）"
+
 SSH_DIR="${HOME}/.ssh"
 mkdir -p "$SSH_DIR"
 chmod 700 "$SSH_DIR"
@@ -63,7 +66,10 @@ sync_one() {
     return
   fi
 
-  [[ -d "$dir" ]] && die "${dir} 存在但不是 git 仓库，先 rm -rf ${dir}"
+  if [[ -d "$dir" && ! -d "${dir}/.git" ]]; then
+    log "${name}: ${dir} 不是 git 仓库，删除后重新 clone"
+    rm -rf "$dir"
+  fi
 
   log "${name}: git clone -b ${branch} → ${url}"
   git clone -b "$branch" "$url" "$dir"
