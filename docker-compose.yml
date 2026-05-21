@@ -38,8 +38,6 @@ services:
     container_name: dev
     restart: unless-stopped
     network_mode: host
-    env_file:
-      - .env
     environment:
       RUN_GIT_SYNC: "1"
     command: ["/bin/bash", "/usr/local/bin/workspace-infra-entrypoint.sh", "2201"]
@@ -51,7 +49,6 @@ services:
       - ssh-data:/home/admin/.ssh
       - ./scripts/pull.sh:/usr/local/bin/pull:ro
       - ./scripts/workspace-infra-entrypoint.sh:/usr/local/bin/workspace-infra-entrypoint.sh:ro
-      - ./scripts/workspace-ssh-volume-init.sh:/usr/local/bin/workspace-ssh-volume-init.sh:ro
 
   prod:
     build: .
@@ -59,21 +56,16 @@ services:
     container_name: prod
     restart: unless-stopped
     network_mode: host
-    env_file:
-      - .env
     environment:
       NVIDIA_VISIBLE_DEVICES: all
       NVIDIA_DRIVER_CAPABILITIES: compute,utility
     command: ["/bin/bash", "/usr/local/bin/workspace-infra-entrypoint.sh", "2202"]
     volumes:
       - /home/admin/work:/home/admin/work
-      - ./.env:/etc/workspace-infra/env:ro
       - ./logs:/var/log/workspace-infra
       - prod-data:/home/admin/.local
       - ssh-data:/home/admin/.ssh
-      - ./scripts/pull.sh:/usr/local/bin/pull:ro
       - ./scripts/workspace-infra-entrypoint.sh:/usr/local/bin/workspace-infra-entrypoint.sh:ro
-      - ./scripts/workspace-ssh-volume-init.sh:/usr/local/bin/workspace-ssh-volume-init.sh:ro
     gpus: all
 
 volumes:

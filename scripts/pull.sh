@@ -13,13 +13,13 @@ die() {
   exit 1
 }
 
-[[ -f "$ENV_FILE" ]] || die "缺少 ${ENV_FILE}（compose 应挂载 .env）"
+[[ -f "$ENV_FILE" ]] || die "缺少 ${ENV_FILE}"
 set -a
 # shellcheck disable=SC1090
 source "$ENV_FILE"
 set +a
 
-[[ "$(id -un)" == "admin" ]] || die "须以 admin 运行（entrypoint 会用 sudo -u admin 调用）"
+[[ "$(id -un)" == "admin" ]] || die "须以 admin 运行"
 
 : "${NEXTGIRL_GIT_URL:?NEXTGIRL_GIT_URL 未设置}"
 : "${NEXTGIRL_GIT_BRANCH:?NEXTGIRL_GIT_BRANCH 未设置}"
@@ -28,24 +28,15 @@ set +a
 : "${FUTURIST_GIT_URL:?FUTURIST_GIT_URL 未设置}"
 : "${FUTURIST_GIT_BRANCH:?FUTURIST_GIT_BRANCH 未设置}"
 
-log "工作目录: ${WORK}"
 mkdir -p "$WORK"
 cd "$WORK"
 
 exec 9>"${WORK}/.pull.lock"
-flock -n 9 || die "另一个 pull 正在运行（dev/prod 勿同时 pull）"
+flock -n 9 || die "另一个 pull 正在运行"
 
 SSH_DIR="${HOME}/.ssh"
-mkdir -p "$SSH_DIR"
-chmod 700 "$SSH_DIR"
-if ! grep -q '^github\.com ' "${SSH_DIR}/known_hosts" 2>/dev/null; then
-  log "写入 github.com known_hosts"
-  ssh-keyscan -t ed25519,rsa github.com >>"${SSH_DIR}/known_hosts"
-  chmod 644 "${SSH_DIR}/known_hosts"
-fi
-
 if [[ ! -f "${SSH_DIR}/id_ed25519" && ! -f "${SSH_DIR}/id_rsa" ]]; then
-  die "无 ~/.ssh/id_ed25519：容器内 ssh-keygen -t ed25519 -N '' -f ~/.ssh/id_ed25519，公钥加到 GitHub"
+  die "无 ~/.ssh/id_ed25519 — ssh-keygen -t ed25519 -N '' -f ~/.ssh/id_ed25519，公钥加到 GitHub"
 fi
 
 export GIT_SSH_COMMAND="ssh -o BatchMode=yes -o ConnectTimeout=15 -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=${SSH_DIR}/known_hosts"
@@ -58,27 +49,26 @@ sync_one() {
   local t0=$SECONDS
 
   if [[ -d "${dir}/.git" ]]; then
-    log "${name}: fetch origin/${branch} → ${url}"
+    log "${name}: fetch origin/${branch}"
     git -C "$dir" fetch origin "$branch"
     git -C "$dir" checkout -B "$branch" "origin/${branch}"
     git -C "$dir" reset --hard "origin/${branch}"
-    log "${name}: 同步完成，耗时 $((SECONDS - t0))s"
+    log "${name}: 完成 $((SECONDS - t0))s"
     return
   fi
 
-  if [[ -d "$dir" && ! -d "${dir}/.git" ]]; then
-    log "${name}: ${dir} 不是 git 仓库，删除后重新 clone"
+  if [[ -d "$dir" ]]; then
+    log "${name}: 删除非 git 目录 ${dir}"
     rm -rf "$dir"
   fi
 
-  log "${name}: git clone -b ${branch} → ${url}"
+  log "${name}: clone -b ${branch}"
   git clone -b "$branch" "$url" "$dir"
-  log "${name}: clone 完成，耗时 $((SECONDS - t0))s"
+  log "${name}: 完成 $((SECONDS - t0))s"
 }
 
-log "========== 开始同步三仓库 =========="
+log "========== 同步三仓库 =========="
 sync_one nextgirl "$NEXTGIRL_GIT_URL" "$NEXTGIRL_GIT_BRANCH"
 sync_one intelink "$INTELINK_GIT_URL" "$INTELINK_GIT_BRANCH"
 sync_one futurist "$FUTURIST_GIT_URL" "$FUTURIST_GIT_BRANCH"
-log "========== 同步结束 =========="
-ls -la "$WORK"
+log "========== 结束 =========="

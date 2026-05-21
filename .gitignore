@@ -1,4 +1,5 @@
 *.log
+debug.log
 work/
 logs/*
 !logs/.gitkeep
