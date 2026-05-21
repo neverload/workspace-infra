@@ -8,8 +8,7 @@ cd "$ROOT"
 echo "========== status $(date -Iseconds) =========="
 echo "compose 目录: $ROOT"
 if [[ ! -f "$ROOT/.env" ]]; then
-  echo "!!! 缺少 .env — docker compose up -d 会失败（caddy 需要端口变量）"
-  echo "    修复: cp .env.example .env"
+  echo "!!! 缺少 .env — git pull 后应有此文件"
 fi
 echo ""
 
