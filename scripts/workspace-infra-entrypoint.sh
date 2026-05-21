@@ -6,7 +6,7 @@ LOG_DIR="/var/log/workspace-infra"
 LOG_FILE="${LOG_DIR}/startup.log"
 
 log() {
-  local line="[$(date -Iseconds)] [dev-entrypoint] $*"
+  local line="[$(date -Iseconds)] [entrypoint] $*"
   echo "$line" >&2
   if [[ -d "$LOG_DIR" && -w "$LOG_DIR" ]]; then
     echo "$line" >>"$LOG_FILE"
@@ -14,29 +14,38 @@ log() {
 }
 
 log "========== 容器启动 =========="
-log "sshd 将监听端口: ${SSH_PORT}"
+log "sshd 端口: ${SSH_PORT}"
 
 /usr/local/bin/workspace-ssh-volume-init.sh 2>&1 | while read -r line; do log "$line"; done
 
-log "--- /home/admin/work 挂载与内容 ---"
+log "--- 挂载 /home/admin/work ---"
 if command -v findmnt >/dev/null 2>&1; then
-  findmnt -T /home/admin/work 2>&1 | while read -r line; do log "findmnt: $line"; done || log "findmnt: 无法解析挂载"
+  findmnt -T /home/admin/work 2>&1 | while read -r line; do log "findmnt: $line"; done || true
+fi
+
+log "========== git 同步（up 时自动执行 pull，clone 可能数分钟）=========="
+pull_rc=0
+if [[ -f /usr/local/bin/pull ]]; then
+  pull_out="$(mktemp)"
+  set +e
+  sudo -u admin -H /bin/bash /usr/local/bin/pull >"$pull_out" 2>&1
+  pull_rc=$?
+  set -e
+  while read -r line; do log "$line"; done <"$pull_out"
+  rm -f "$pull_out"
+  if [[ "$pull_rc" -ne 0 ]]; then
+    log "!!! git 同步失败 exit=${pull_rc} — 见上方 [pull] 日志"
+    log "!!! 常见原因: 容器 admin 无 GitHub SSH 私钥；或 /home/admin/work 权限"
+  else
+    log "git 同步成功"
+  fi
 else
-  mount 2>/dev/null | grep -F '/home/admin/work' | while read -r line; do log "mount: $line"; done || true
+  log "未找到 /usr/local/bin/pull，跳过 git 同步"
 fi
 
 WORK_ITEMS="$(ls -A /home/admin/work 2>/dev/null | wc -l)"
-log "work 目录条目数: ${WORK_ITEMS}"
+log "work 条目数: ${WORK_ITEMS}"
 ls -la /home/admin/work 2>&1 | while read -r line; do log "  $line"; done
-
-if [[ "${WORK_ITEMS}" -eq 0 ]]; then
-  log "!!! WORK 为空 !!!"
-  log "代码不会自动出现。在宿主机执行："
-  log "  cd /home/admin/work && git clone git@github.com:neverload/nextgirl.git"
-  log "  （宿主机与容器均为 /home/admin/work，同一目录）"
-else
-  log "work 非空，挂载正常"
-fi
 
 log "--- sshd 启动 ---"
 exec /usr/sbin/sshd -D -e -p "${SSH_PORT}"
