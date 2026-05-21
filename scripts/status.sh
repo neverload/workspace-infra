@@ -7,6 +7,10 @@ cd "$ROOT"
 
 echo "========== status $(date -Iseconds) =========="
 echo "compose 目录: $ROOT"
+if [[ ! -f "$ROOT/.env" ]]; then
+  echo "!!! 缺少 .env — docker compose up -d 会失败（caddy 需要端口变量）"
+  echo "    修复: cp .env.example .env"
+fi
 echo ""
 
 echo "--- 宿主机 /home/admin/work （代码 clone 在这里）---"
@@ -17,7 +21,7 @@ if [[ -d "$HOST_WORK" ]]; then
   echo "属主: $(stat -c '%U:%G' "$HOST_WORK" 2>/dev/null || echo '?')"
   if [[ "$(stat -c '%U' "$HOST_WORK" 2>/dev/null)" != "admin" ]]; then
     echo "!!! 目录不是 admin 属主，pull 会 Permission denied"
-    echo "    修复: sudo chown admin:admin /home/admin/work && docker compose restart dev"
+    echo "    修复: sudo chown -R admin:admin /home/admin/work && docker compose restart dev"
   fi
 else
   echo "!!! $HOST_WORK 不存在 — mkdir -p /home/admin/work"
