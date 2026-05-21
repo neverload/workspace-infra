@@ -17,10 +17,14 @@ HOST_WORK="/home/admin/work"
 if [[ -d "$HOST_WORK" ]]; then
   ls -la "$HOST_WORK"
   echo "条目数: $(ls -A "$HOST_WORK" 2>/dev/null | wc -l)"
-  echo "属主: $(stat -c '%U:%G' "$HOST_WORK" 2>/dev/null || echo '?')"
-  if [[ "$(stat -c '%U' "$HOST_WORK" 2>/dev/null)" != "admin" ]]; then
-    echo "!!! 目录不是 admin 属主，pull 会 Permission denied"
-    echo "    修复: sudo chown -R admin:admin /home/admin/work && docker compose restart dev"
+  work_uid="$(stat -c '%u' "$HOST_WORK" 2>/dev/null || echo '')"
+  echo "属主: $(stat -c '%U:%G (%u:%g)' "$HOST_WORK" 2>/dev/null || echo '?')"
+  if docker ps --format '{{.Names}}' | grep -qx dev; then
+    container_admin_uid="$(docker exec dev id -u admin 2>/dev/null || echo '')"
+    if [[ -n "$work_uid" && -n "$container_admin_uid" && "$work_uid" != "$container_admin_uid" ]]; then
+      echo "!!! work UID=${work_uid} 与容器 admin UID=${container_admin_uid} 不一致，pull 可能 Permission denied"
+      echo "    修复: docker compose restart dev（entrypoint 会 chown -R）"
+    fi
   fi
 else
   echo "!!! $HOST_WORK 不存在 — mkdir -p /home/admin/work"

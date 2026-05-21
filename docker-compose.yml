@@ -43,6 +43,7 @@ services:
     command: ["/bin/bash", "/usr/local/bin/workspace-infra-entrypoint.sh", "2201"]
     volumes:
       - /home/admin/work:/home/admin/work
+      - ./.env:/etc/workspace-infra/env:ro
       - ./logs:/var/log/workspace-infra
       - dev-data:/home/admin/.local
       - ssh-data:/home/admin/.ssh
@@ -64,6 +65,7 @@ services:
     command: ["/bin/bash", "/usr/local/bin/workspace-infra-entrypoint.sh", "2202"]
     volumes:
       - /home/admin/work:/home/admin/work
+      - ./.env:/etc/workspace-infra/env:ro
       - ./logs:/var/log/workspace-infra
       - prod-data:/home/admin/.local
       - ssh-data:/home/admin/.ssh

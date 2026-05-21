@@ -1,7 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
-WORK="${WORK_DIR:?WORK_DIR 未设置}"
+ENV_FILE="/etc/workspace-infra/env"
+WORK="/home/admin/work"
 
 log() {
   echo "[$(date -Iseconds)] [pull] $*"
@@ -11,6 +12,12 @@ die() {
   log "错误: $*"
   exit 1
 }
+
+[[ -f "$ENV_FILE" ]] || die "缺少 ${ENV_FILE}（compose 应挂载 .env）"
+set -a
+# shellcheck disable=SC1090
+source "$ENV_FILE"
+set +a
 
 [[ "$(id -un)" == "admin" ]] || die "须以 admin 运行（entrypoint 会用 sudo -u admin 调用）"
 
