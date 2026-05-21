@@ -42,12 +42,12 @@ RUN mkdir /var/run/sshd && \
     sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin no/' /etc/ssh/sshd_config && \
     sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
 
-COPY scripts/workspace-bootstrap.sh /usr/local/bin/workspace-bootstrap.sh
 COPY scripts/workspace-infra-entrypoint.sh /usr/local/bin/workspace-infra-entrypoint.sh
 COPY scripts/workspace-ssh-volume-init.sh /usr/local/bin/workspace-ssh-volume-init.sh
-RUN chmod 755 /usr/local/bin/workspace-bootstrap.sh \
-    /usr/local/bin/workspace-infra-entrypoint.sh \
-    /usr/local/bin/workspace-ssh-volume-init.sh
+COPY scripts/pull.sh /usr/local/bin/pull
+RUN chmod 755 /usr/local/bin/workspace-infra-entrypoint.sh \
+    /usr/local/bin/workspace-ssh-volume-init.sh \
+    /usr/local/bin/pull
 
 EXPOSE 22
 CMD ["/usr/sbin/sshd", "-D"]

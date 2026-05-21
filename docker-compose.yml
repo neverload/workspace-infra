@@ -38,8 +38,6 @@ services:
     container_name: dev
     restart: unless-stopped
     network_mode: host
-    env_file:
-      - .env
     command: ["/usr/local/bin/workspace-infra-entrypoint.sh", "2201"]
     volumes:
       - work-data:/home/admin/work
@@ -52,8 +50,6 @@ services:
     container_name: prod
     restart: unless-stopped
     network_mode: host
-    env_file:
-      - .env
     command: ["/usr/local/bin/workspace-infra-entrypoint.sh", "2202"]
     volumes:
       - work-data:/home/admin/work
