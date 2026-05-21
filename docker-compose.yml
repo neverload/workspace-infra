@@ -57,6 +57,7 @@ services:
     restart: unless-stopped
     network_mode: host
     environment:
+      RUN_GIT_SYNC: "0"
       NVIDIA_VISIBLE_DEVICES: all
       NVIDIA_DRIVER_CAPABILITIES: compute,utility
     command: ["/bin/bash", "/usr/local/bin/workspace-infra-entrypoint.sh", "2202"]
