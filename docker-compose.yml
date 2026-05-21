@@ -40,7 +40,7 @@ services:
     network_mode: host
     command: ["/usr/local/bin/workspace-infra-entrypoint.sh", "2201"]
     volumes:
-      - work-data:/home/admin/work
+      - ./work:/home/admin/work
       - dev-data:/home/admin/.local
       - ssh-data:/home/admin/.ssh
       - ./scripts/pull.sh:/usr/local/bin/pull:ro
@@ -55,7 +55,7 @@ services:
     network_mode: host
     command: ["/usr/local/bin/workspace-infra-entrypoint.sh", "2202"]
     volumes:
-      - work-data:/home/admin/work
+      - ./work:/home/admin/work
       - prod-data:/home/admin/.local
       - ssh-data:/home/admin/.ssh
       - ./scripts/pull.sh:/usr/local/bin/pull:ro
@@ -77,8 +77,6 @@ volumes:
     name: workspace_infra_dev_data
   prod-data:
     name: workspace_infra_prod_data
-  work-data:
-    name: workspace_infra_work_data
   ssh-data:
     name: workspace_infra_ssh_data
 
