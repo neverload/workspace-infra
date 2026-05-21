@@ -38,7 +38,7 @@ services:
     container_name: dev
     restart: unless-stopped
     network_mode: host
-    command: ["/usr/local/bin/workspace-infra-entrypoint.sh", "2201"]
+    command: ["/bin/bash", "/usr/local/bin/workspace-infra-entrypoint.sh", "2201"]
     volumes:
       - ./work:/home/admin/work
       - dev-data:/home/admin/.local
@@ -53,7 +53,7 @@ services:
     container_name: prod
     restart: unless-stopped
     network_mode: host
-    command: ["/usr/local/bin/workspace-infra-entrypoint.sh", "2202"]
+    command: ["/bin/bash", "/usr/local/bin/workspace-infra-entrypoint.sh", "2202"]
     volumes:
       - ./work:/home/admin/work
       - prod-data:/home/admin/.local
