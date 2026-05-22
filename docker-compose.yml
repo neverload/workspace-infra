@@ -42,7 +42,7 @@ services:
       RUN_GIT_SYNC: "1"
     command: ["/bin/bash", "/usr/local/bin/workspace-infra-entrypoint.sh", "2201"]
     volumes:
-      - /home/admin/work:/home/admin/work
+      - work-data:/home/admin/work
       - ./.env:/etc/workspace-infra/env:ro
       - ./logs:/var/log/workspace-infra
       - dev-data:/home/admin/.local
@@ -62,7 +62,7 @@ services:
       NVIDIA_DRIVER_CAPABILITIES: compute,utility
     command: ["/bin/bash", "/usr/local/bin/workspace-infra-entrypoint.sh", "2202"]
     volumes:
-      - /home/admin/work:/home/admin/work
+      - work-data:/home/admin/work
       - ./logs:/var/log/workspace-infra
       - prod-data:/home/admin/.local
       - ssh-data:/home/admin/.ssh
@@ -76,6 +76,8 @@ volumes:
     name: workspace_infra_caddy_config
   mongodb_data:
     name: workspace_infra_mongodb_data
+  work-data:
+    name: workspace_infra_work_data
   dev-data:
     name: workspace_infra_dev_data
   prod-data:

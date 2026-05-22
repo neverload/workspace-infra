@@ -34,6 +34,20 @@ init_ssh() {
   fi
 }
 
+repo_ok() {
+  local dir="$1"
+  [[ -d "${dir}/.git" ]] || return 1
+  git -C "$dir" rev-parse --verify HEAD >/dev/null 2>&1 || return 1
+  [[ -n "$(git -C "$dir" ls-files | head -1)" ]] || return 1
+}
+
+all_repos_ok() {
+  local name
+  for name in nextgirl intelink futurist; do
+    repo_ok "${WORK}/${name}" || return 1
+  done
+}
+
 log_work() {
   local work_items
   work_items="$(ls -A "$WORK" 2>/dev/null | wc -l)"
@@ -68,10 +82,15 @@ chown -R admin:admin "$WORK"
 chmod 755 "$WORK"
 log "${WORK} 权限: $(stat -c '%U:%G %a' "$WORK")"
 
-if [[ "${RUN_GIT_SYNC}" == "1" ]]; then
-  log "git 同步（后台）— tail -f logs/startup.log"
-  run_pull &
-  log "git 同步 pid=$!"
+if [[ "${RUN_GIT_SYNC:-0}" == "1" ]]; then
+  if all_repos_ok; then
+    log "git 同步（后台更新）"
+    run_pull &
+    log "git 同步 pid=$!"
+  else
+    log "git 同步（前台 clone，完成后再开 sshd）"
+    run_pull || log "!!! pull 失败，sshd 仍启动"
+  fi
 else
   log_work
 fi

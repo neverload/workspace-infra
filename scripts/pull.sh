@@ -13,6 +13,13 @@ die() {
   exit 1
 }
 
+repo_ok() {
+  local dir="$1"
+  [[ -d "${dir}/.git" ]] || return 1
+  git -C "$dir" rev-parse --verify HEAD >/dev/null 2>&1 || return 1
+  [[ -n "$(git -C "$dir" ls-files | head -1)" ]] || return 1
+}
+
 [[ -f "$ENV_FILE" ]] || die "缺少 ${ENV_FILE}"
 set -a
 # shellcheck disable=SC1090
@@ -48,23 +55,23 @@ sync_one() {
   local dir="${WORK}/${name}"
   local t0=$SECONDS
 
-  if [[ -d "${dir}/.git" ]]; then
+  if [[ -d "$dir" ]] && ! repo_ok "$dir"; then
+    log "${name}: 删除无效目录 ${dir}"
+    rm -rf "$dir"
+  fi
+
+  if repo_ok "$dir"; then
     log "${name}: fetch origin/${branch}"
     git -C "$dir" fetch origin "$branch"
     git -C "$dir" checkout -B "$branch" "origin/${branch}"
     git -C "$dir" reset --hard "origin/${branch}"
-    log "${name}: 完成 $((SECONDS - t0))s"
-    return
+  else
+    log "${name}: clone -b ${branch}（大仓库可能数分钟）"
+    git clone --progress -b "$branch" "$url" "$dir"
   fi
 
-  if [[ -d "$dir" ]]; then
-    log "${name}: 删除非 git 目录 ${dir}"
-    rm -rf "$dir"
-  fi
-
-  log "${name}: clone -b ${branch}"
-  git clone -b "$branch" "$url" "$dir"
-  log "${name}: 完成 $((SECONDS - t0))s"
+  repo_ok "$dir" || die "${name}: 同步后仍为空"
+  log "${name}: 完成 $((SECONDS - t0))s，$(git -C "$dir" ls-files | wc -l) 文件"
 }
 
 log "========== 同步三仓库 =========="
