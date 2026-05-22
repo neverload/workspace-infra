@@ -17,21 +17,6 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
-  mongodb:
-    image: mongo:7
-    container_name: mongo
-    environment:
-      MONGO_INITDB_DATABASE: workspace_infra
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongodb_data:/data/db
-    restart: unless-stopped
-    cpus: 2.0
-    mem_limit: 1G
-    networks:
-      - dev-network
-
   dev:
     build: .
     image: workspace-infra/dev:latest
@@ -74,8 +59,6 @@ volumes:
     name: workspace_infra_caddy_data
   caddy_config:
     name: workspace_infra_caddy_config
-  mongodb_data:
-    name: workspace_infra_mongodb_data
   work-data:
     name: workspace_infra_work_data
   dev-data:
@@ -84,7 +67,3 @@ volumes:
     name: workspace_infra_prod_data
   ssh-data:
     name: workspace_infra_ssh_data
-
-networks:
-  dev-network:
-    driver: bridge
