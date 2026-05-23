@@ -17,15 +17,17 @@ log() {
 
 init_ssh() {
   local known_hosts="${SSH_DIR}/known_hosts"
+  local host_authorized_keys="/host-ssh/authorized_keys"
+
   install -d -m 0700 -o admin -g admin "${SSH_DIR}"
-  if [[ ! -f "${SSH_DIR}/authorized_keys" ]]; then
-    install -m 0600 -o admin -g admin /dev/null "${SSH_DIR}/authorized_keys"
-  elif [[ -w "${SSH_DIR}/authorized_keys" ]]; then
-    chown admin:admin "${SSH_DIR}/authorized_keys"
-    chmod 0600 "${SSH_DIR}/authorized_keys"
-  else
-    log "authorized_keys 为宿主机只读挂载，跳过 chown/chmod"
+
+  if [[ ! -f "${host_authorized_keys}" ]]; then
+    log "错误: 宿主机 authorized_keys 不存在: ${host_authorized_keys}"
+    exit 1
   fi
+  install -m 0600 -o admin -g admin "${host_authorized_keys}" "${SSH_DIR}/authorized_keys"
+  log "已从宿主机同步 authorized_keys ($(wc -l <"${SSH_DIR}/authorized_keys") 条)"
+
   touch "${known_hosts}"
   chown admin:admin "${known_hosts}"
   chmod 0644 "${known_hosts}"
