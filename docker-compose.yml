@@ -41,6 +41,7 @@ services:
       - ./logs:/var/log/workspace-infra
       - dev-data:/home/admin/.local
       - ssh-data:/home/admin/.ssh
+      - /home/admin/.ssh/authorized_keys:/home/admin/.ssh/authorized_keys:ro
       - ./scripts/pull.sh:/usr/local/bin/pull:ro
       - ./scripts/workspace-infra-entrypoint.sh:/usr/local/bin/workspace-infra-entrypoint.sh:ro
 
@@ -60,6 +61,7 @@ services:
       - ./logs:/var/log/workspace-infra
       - prod-data:/home/admin/.local
       - ssh-data:/home/admin/.ssh
+      - /home/admin/.ssh/authorized_keys:/home/admin/.ssh/authorized_keys:ro
       - ./scripts/workspace-infra-entrypoint.sh:/usr/local/bin/workspace-infra-entrypoint.sh:ro
     gpus: all
 

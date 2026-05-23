@@ -20,9 +20,11 @@ init_ssh() {
   install -d -m 0700 -o admin -g admin "${SSH_DIR}"
   if [[ ! -f "${SSH_DIR}/authorized_keys" ]]; then
     install -m 0600 -o admin -g admin /dev/null "${SSH_DIR}/authorized_keys"
-  else
+  elif [[ -w "${SSH_DIR}/authorized_keys" ]]; then
     chown admin:admin "${SSH_DIR}/authorized_keys"
     chmod 0600 "${SSH_DIR}/authorized_keys"
+  else
+    log "authorized_keys 为宿主机只读挂载，跳过 chown/chmod"
   fi
   touch "${known_hosts}"
   chown admin:admin "${known_hosts}"
