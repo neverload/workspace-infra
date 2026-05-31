@@ -31,10 +31,18 @@ comfy_pid="$!"
 
 echo "prod-entrypoint started: sshd_pid=${sshd_pid} comfy_pid=${comfy_pid}" >&2
 
-set +e
-wait -n "${sshd_pid}" "${comfy_pid}"
-rc="$?"
-set -e
+rc="0"
+while true; do
+  if ! kill -0 "${sshd_pid}" 2>/dev/null; then
+    wait "${sshd_pid}" || rc="$?"
+    break
+  fi
+  if ! kill -0 "${comfy_pid}" 2>/dev/null; then
+    wait "${comfy_pid}" || rc="$?"
+    break
+  fi
+  sleep 1
+done
 
 echo "prod-entrypoint child exited: exit=${rc}" >&2
 echo "---- sshd log tail ----" >&2
