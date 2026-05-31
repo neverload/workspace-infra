@@ -4,6 +4,7 @@ set -Eeuo pipefail
 trap 'rc=$?; echo "start-comfy failed: exit=${rc} line=${LINENO} command=${BASH_COMMAND}" >&2; exit "${rc}"' ERR
 
 COMFY_DIR="/home/admin/ref/ComfyUI"
+COMFY_PYTHON="/home/admin/ref/comfy-venv/bin/python"
 COMFY_PORT="8188"
 
 if [[ ! -d "${COMFY_DIR}" ]]; then
@@ -20,4 +21,9 @@ if [[ ! -f main.py ]]; then
   exit 1
 fi
 
-exec python3 main.py --listen 0.0.0.0 --port "${COMFY_PORT}"
+if [[ ! -x "${COMFY_PYTHON}" ]]; then
+  echo "ComfyUI Python venv does not exist or is not executable: ${COMFY_PYTHON}" >&2
+  exit 1
+fi
+
+exec "${COMFY_PYTHON}" main.py --listen 0.0.0.0 --port "${COMFY_PORT}"
