@@ -4,7 +4,7 @@ set -Eeuo pipefail
 trap 'rc=$?; echo "start-comfy failed: exit=${rc} line=${LINENO} command=${BASH_COMMAND}" >&2; exit "${rc}"' ERR
 
 COMFY_DIR="/home/admin/ref/ComfyUI"
-COMFY_PYTHON="/home/admin/ref/comfy-venv/bin/python"
+COMFY_PYTHON="/home/admin/ref/ComfyUI/.venv/bin/python"
 COMFY_PORT="8188"
 
 if [[ ! -d "${COMFY_DIR}" ]]; then
