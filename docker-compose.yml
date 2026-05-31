@@ -64,6 +64,8 @@ services:
       - ssh-data:/home/admin/.ssh
       - /home/admin/.ssh/authorized_keys:/host-ssh/authorized_keys:ro
       - ./scripts/workspace-infra-entrypoint.sh:/usr/local/bin/workspace-infra-entrypoint.sh:ro
+      - ./scripts/start-comfy.sh:/usr/local/bin/start-comfy:ro
+      - ~/ref/ComfyUI:/workspace/ComfyUI
     gpus: all
 
 volumes:
