@@ -3,7 +3,7 @@ set -Eeuo pipefail
 
 trap 'rc=$?; echo "start-comfy failed: exit=${rc} line=${LINENO} command=${BASH_COMMAND}" >&2; exit "${rc}"' ERR
 
-COMFY_DIR="/workspace/ComfyUI"
+COMFY_DIR="/home/admin/ref/ComfyUI"
 COMFY_PORT="8188"
 
 if [[ ! -d "${COMFY_DIR}" ]]; then
