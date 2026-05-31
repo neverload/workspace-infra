@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -Eeuo pipefail
+set -euo pipefail
 
 trap 'rc=$?; echo "prod-entrypoint failed: exit=${rc} line=${LINENO} command=${BASH_COMMAND}" >&2; exit "${rc}"' ERR
 
@@ -26,15 +26,17 @@ trap 'terminate_children 143' TERM INT
 /bin/bash /usr/local/bin/workspace-infra-entrypoint.sh "${SSHD_PORT}" >"${SSHD_LOG}" 2>&1 &
 sshd_pid="$!"
 
-(
+run_comfy() {
   set +e
   /bin/bash /usr/local/bin/start-comfy >"${COMFY_LOG}" 2>&1
   comfy_rc="$?"
   echo "comfy exited: exit=${comfy_rc}" >&2
   echo "---- comfy log tail ----" >&2
   tail -100 "${COMFY_LOG}" >&2 || true
-  exit "${comfy_rc}"
-) &
+  return 0
+}
+
+run_comfy &
 comfy_pid="$!"
 
 echo "prod-entrypoint started: sshd_pid=${sshd_pid} comfy_pid=${comfy_pid}" >&2
