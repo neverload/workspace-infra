@@ -26,25 +26,23 @@ trap 'terminate_children 143' TERM INT
 /bin/bash /usr/local/bin/workspace-infra-entrypoint.sh "${SSHD_PORT}" >"${SSHD_LOG}" 2>&1 &
 sshd_pid="$!"
 
-/bin/bash /usr/local/bin/start-comfy >"${COMFY_LOG}" 2>&1 &
+(
+  set +e
+  /bin/bash /usr/local/bin/start-comfy >"${COMFY_LOG}" 2>&1
+  comfy_rc="$?"
+  echo "comfy exited: exit=${comfy_rc}" >&2
+  echo "---- comfy log tail ----" >&2
+  tail -100 "${COMFY_LOG}" >&2 || true
+  exit "${comfy_rc}"
+) &
 comfy_pid="$!"
 
 echo "prod-entrypoint started: sshd_pid=${sshd_pid} comfy_pid=${comfy_pid}" >&2
 
-rc="0"
-while true; do
-  if ! kill -0 "${sshd_pid}" 2>/dev/null; then
-    wait "${sshd_pid}" || rc="$?"
-    break
-  fi
-  if ! kill -0 "${comfy_pid}" 2>/dev/null; then
-    wait "${comfy_pid}" || rc="$?"
-    break
-  fi
-  sleep 1
-done
+wait "${sshd_pid}"
+rc="$?"
 
-echo "prod-entrypoint child exited: exit=${rc}" >&2
+echo "prod-entrypoint sshd exited: exit=${rc}" >&2
 echo "---- sshd log tail ----" >&2
 tail -100 "${SSHD_LOG}" >&2 || true
 echo "---- comfy log tail ----" >&2

@@ -12,4 +12,12 @@ if [[ ! -d "${COMFY_DIR}" ]]; then
 fi
 
 cd "${COMFY_DIR}"
+
+if [[ ! -f main.py ]]; then
+  echo "ComfyUI main.py does not exist: ${COMFY_DIR}/main.py" >&2
+  echo "ComfyUI directory listing:" >&2
+  ls -la "${COMFY_DIR}" >&2
+  exit 1
+fi
+
 exec python3 main.py --listen 0.0.0.0 --port "${COMFY_PORT}"
