@@ -27,6 +27,43 @@ services:
     volumes:
       - mongodb_data:/data/db
 
+  postgre:
+    image: postgres:16
+    container_name: postgre
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5432:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?set POSTGRES_USER in .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:?set POSTGRES_DB in .env}
+    volumes:
+      - postgre_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    container_name: redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--requirepass", "${REDIS_PASSWORD:?set REDIS_PASSWORD in .env}"]
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - redis_data:/data
+
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    restart: unless-stopped
+    command: ["server", "/data", "--console-address", ":9001"]
+    ports:
+      - "127.0.0.1:9000:9000"
+      - "127.0.0.1:9001:9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?set MINIO_ROOT_USER in .env}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?set MINIO_ROOT_PASSWORD in .env}
+    volumes:
+      - minio_data:/data
+
   dev:
     build: .
     image: workspace-infra/dev:latest
@@ -75,6 +112,12 @@ volumes:
     name: workspace_infra_caddy_config
   mongodb_data:
     name: workspace_infra_mongodb_data
+  postgre_data:
+    name: workspace_infra_postgre_data
+  redis_data:
+    name: workspace_infra_redis_data
+  minio_data:
+    name: workspace_infra_minio_data
   work-data:
     name: workspace_infra_work_data
   dev-data:
